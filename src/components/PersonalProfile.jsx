@@ -1,12 +1,5 @@
 import React, { useState } from "react";
 
-/**
- * Robust PersonalProfile component
- * - Hiển thị lỗi trong UI nếu fetch bị lỗi
- * - Bảo vệ trước giá trị undefined từ API
- * - Avoids crashes so you won't see a white page
- */
-
 export default function PersonalProfile() {
   const [active, setActive] = useState("");
   const [city, setCity] = useState("");
@@ -297,3 +290,4 @@ const secondaryBtn = {
   padding: "8px 14px",
   cursor: "pointer",
 };
+
