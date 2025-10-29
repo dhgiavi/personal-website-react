@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import avatar from "../assets/vi.jpg";
 
 export default function PersonalProfile() {
   const [active, setActive] = useState("");
@@ -6,8 +7,6 @@ export default function PersonalProfile() {
   const [weather, setWeather] = useState(null);
   const [usd, setUsd] = useState("");
   const [vnd, setVnd] = useState(null);
-
-  // trạng thái hiển thị lỗi
   const [errorMsg, setErrorMsg] = useState("");
 
   const profile = {
@@ -18,7 +17,7 @@ export default function PersonalProfile() {
     hobbies: "Lập trình nhúng, IoT, tự động hóa và AI",
   };
 
-  // Lấy dữ liệu thời tiết (an toàn, với setErrorMsg)
+  // Lấy dữ liệu thời tiết
   async function fetchWeather() {
     setErrorMsg("");
     setWeather(null);
@@ -28,16 +27,12 @@ export default function PersonalProfile() {
     }
 
     try {
-      // 1) Geocoding
       const geoRes = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
           city
         )}&count=1&language=vi&format=json`
       );
-
-      if (!geoRes.ok) {
-        throw new Error(`Geocoding API lỗi: ${geoRes.status}`);
-      }
+      if (!geoRes.ok) throw new Error(`Geocoding API lỗi: ${geoRes.status}`);
       const geoJson = await geoRes.json();
       if (!geoJson?.results?.length) {
         setErrorMsg("Không tìm thấy vị trí. Thử tên khác (ví dụ: Hanoi).");
@@ -45,20 +40,14 @@ export default function PersonalProfile() {
       }
 
       const { latitude, longitude, name, country } = geoJson.results[0];
-
-      // 2) Weather
       const weatherRes = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
       );
-
-      if (!weatherRes.ok) {
-        throw new Error(`Weather API lỗi: ${weatherRes.status}`);
-      }
-
+      if (!weatherRes.ok) throw new Error(`Weather API lỗi: ${weatherRes.status}`);
       const weatherJson = await weatherRes.json();
       const cw = weatherJson?.current_weather;
       if (!cw) {
-        setErrorMsg("Dữ liệu thời tiết không có phần 'current_weather'.");
+        setErrorMsg("Không có dữ liệu thời tiết hiện tại.");
         return;
       }
 
@@ -69,13 +58,11 @@ export default function PersonalProfile() {
       });
     } catch (err) {
       console.error("fetchWeather error:", err);
-      setErrorMsg(
-        err?.message || "Lỗi khi lấy dữ liệu thời tiết. Kiểm tra console."
-      );
+      setErrorMsg(err?.message || "Lỗi khi lấy dữ liệu thời tiết.");
     }
   }
 
-  // Quy đổi USD -> VND (an toàn)
+  // Quy đổi USD -> VND
   async function convertCurrency() {
     setErrorMsg("");
     setVnd(null);
@@ -90,19 +77,15 @@ export default function PersonalProfile() {
       const res = await fetch(
         "https://api.exchangerate.host/latest?base=USD&symbols=VND"
       );
-      if (!res.ok) {
-        throw new Error(`Currency API lỗi: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Currency API lỗi: ${res.status}`);
       const data = await res.json();
       const rate = data?.rates?.VND;
-      if (!rate) {
-        throw new Error("Không lấy được tỷ giá VND từ API.");
-      }
+      if (!rate) throw new Error("Không lấy được tỷ giá VND từ API.");
       const result = parsed * rate;
       setVnd(result);
     } catch (err) {
       console.error("convertCurrency error:", err);
-      setErrorMsg(err?.message || "Lỗi khi lấy tỷ giá. Kiểm tra console.");
+      setErrorMsg(err?.message || "Lỗi khi lấy tỷ giá.");
     }
   }
 
@@ -127,8 +110,9 @@ export default function PersonalProfile() {
           boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
         }}
       >
+        {/* ✅ Ảnh hoạt động cả local lẫn GitHub Pages */}
         <img
-          src="/vi.jpg"
+          src={avatar}
           alt="avatar"
           style={{
             width: 120,
@@ -137,11 +121,6 @@ export default function PersonalProfile() {
             border: "3px solid #ff99cc",
             boxShadow: "0 6px 20px rgba(255,120,180,0.2)",
             objectFit: "cover",
-          }}
-          onError={(e) => {
-            // nếu ảnh không có, ẩn (tránh crash)
-            e.currentTarget.style.display = "none";
-            console.warn("Avatar not found: /vi.jpg");
           }}
         />
 
@@ -157,7 +136,7 @@ export default function PersonalProfile() {
           </button>
         </div>
 
-        {/* Hiện lỗi (nếu có) */}
+        {/* Hiện lỗi nếu có */}
         {errorMsg && (
           <div
             style={{
@@ -174,7 +153,7 @@ export default function PersonalProfile() {
           </div>
         )}
 
-        {/* Nội dung chỉ khi active */}
+        {/* Nội dung */}
         {active && (
           <div
             style={{
@@ -290,4 +269,3 @@ const secondaryBtn = {
   padding: "8px 14px",
   cursor: "pointer",
 };
-
